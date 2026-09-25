@@ -1,6 +1,6 @@
 # Sunset Boulevard for Home Assistant
 
-Find the nearest [Sunset Boulevard](https://sunset-boulevard.dk/) restaurant for anyone in your household. Home Assistant shows its address and how far away it is, puts it on the map, and can tell you when someone arrives there. You can also put every restaurant on the map.
+Find the nearest [Sunset Boulevard](https://sunset-boulevard.dk/) restaurant for anyone in your household. Home Assistant shows its address and how far away it is, puts it on the map, and can tell you when someone arrives there. It also puts every restaurant on the map.
 
 Available in English and Danish.
 
@@ -32,10 +32,7 @@ Go to **Settings > Devices & services**, select **Add integration** and pick **S
 
 [![Add the Sunset Boulevard integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=sunset_boulevard)
 
-Then choose what to set up:
-
-- **Follow a person**: pick the person or device tracker to follow. To follow more people, add the integration again for each of them.
-- **All restaurants on the map**: every restaurant gets a marker on the map. You only need to add this once.
+Then pick the person or device tracker to follow. To follow more people, add the integration again for each of them.
 
 ## What you get
 
@@ -53,7 +50,7 @@ The zone is not listed under **Settings > Areas, labels & zones**, and a person'
 
 ### All restaurants on the map
 
-Every restaurant shows on the Home Assistant map with its own marker, named after the restaurant, for example `Kolding Storcenter`. Its value is the distance from your home in km. Open it to see the address and a link to the restaurant's page.
+Every restaurant also shows on the Home Assistant map with its own marker, named after the restaurant, for example `Kolding Storcenter`. There is nothing to set up for this, and when you follow more than one person, each restaurant still shows only once. Its value is the distance from your home in km. Open it to see the address and a link to the restaurant's page.
 
 The **Map** in the sidebar shows them by itself. To put them on a dashboard, add a **Map** card, open its code editor and paste this. It shows the fries icon for each restaurant:
 
