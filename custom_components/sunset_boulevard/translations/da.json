@@ -3,20 +3,60 @@
     "step": {
       "user": {
         "title": "Sunset Boulevard",
+        "description": "Hvad vil du sætte op?",
+        "menu_options": {
+          "follow": "Følg en person",
+          "all_restaurants": "Alle restauranter på kortet"
+        },
+        "menu_option_descriptions": {
+          "follow": "Find den restaurant, der er nærmest én person, med adresse og afstand.",
+          "all_restaurants": "Vis alle Sunset Boulevard-restauranter på kortet."
+        }
+      },
+      "follow": {
+        "title": "Følg en person",
         "description": "Vælg den device tracker eller person, hvis position bruges til at finde den nærmeste Sunset Boulevard-restaurant.",
         "data": {
           "device_tracker": "Device tracker eller person"
+        },
+        "data_description": {
+          "device_tracker": "Den restaurant, der er nærmest, bliver vist."
         }
       }
     },
     "abort": {
-      "already_configured": "Denne tracker er allerede konfigureret."
+      "already_configured": "Denne tracker er allerede konfigureret.",
+      "all_restaurants_configured": "Alle restauranter er allerede på kortet."
     }
   },
   "entity": {
     "device_tracker": {
       "closest_location": {
         "name": "Nærmeste restaurants placering"
+      }
+    },
+    "geo_location": {
+      "restaurant": {
+        "state_attributes": {
+          "address": {
+            "name": "Adresse"
+          },
+          "venue": {
+            "name": "Ligger i"
+          },
+          "street": {
+            "name": "Vej"
+          },
+          "postal": {
+            "name": "Postnummer"
+          },
+          "city": {
+            "name": "By"
+          },
+          "link": {
+            "name": "Restaurantens side"
+          }
+        }
       }
     },
     "sensor": {
