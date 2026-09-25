@@ -1,7 +1,8 @@
-"""Every restaurant on the map, for the "All restaurants" entry."""
+"""Every restaurant on the map, once, however many people are followed."""
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from homeassistant.components.geo_location import GeolocationEvent
@@ -10,6 +11,7 @@ from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import slugify
+from homeassistant.util.hass_dict import HassKey
 from homeassistant.util.location import distance
 
 from . import SunsetBoulevardConfigEntry
@@ -20,6 +22,45 @@ from .locations import SunsetBoulevardLocation
 PARALLEL_UPDATES = 0
 
 
+class RestaurantFeed:
+	"""Picks the one loaded entry that shows the restaurants.
+
+	Every entry follows a person, but the restaurants are the same for all of
+	them. The first entry shows them, and when it unloads the next one takes
+	over. The entities keep their registry entries, so their ids, names and
+	hidden state carry over.
+	"""
+
+	def __init__(self) -> None:
+		"""Start with no entry showing the restaurants."""
+		self.provider: str | None = None
+		self._waiting: dict[str, Callable[[], None]] = {}
+
+	@callback
+	def async_join(self, entry_id: str, start: Callable[[], None]) -> None:
+		"""Show the restaurants from this entry, or wait until it is its turn."""
+		if self.provider is None:
+			self.provider = entry_id
+			start()
+		else:
+			self._waiting[entry_id] = start
+
+	@callback
+	def async_leave(self, hass: HomeAssistant, entry_id: str) -> None:
+		"""Hand the restaurants to the next entry when this one unloads."""
+		self._waiting.pop(entry_id, None)
+		if self.provider != entry_id:
+			return
+		self.provider = None
+		if hass.is_stopping or not self._waiting:
+			return
+		self.provider = next(iter(self._waiting))
+		self._waiting.pop(self.provider)()
+
+
+DATA_FEED: HassKey[RestaurantFeed] = HassKey(f"{DOMAIN}_restaurant_feed")
+
+
 def restaurant_key(location: SunsetBoulevardLocation) -> str:
 	"""A stable id for a restaurant: the name of its page, else its own name."""
 	if location.link and (page := location.link.rstrip("/").rsplit("/", 1)[-1]):
@@ -28,6 +69,27 @@ def restaurant_key(location: SunsetBoulevardLocation) -> str:
 
 
 async def async_setup_entry(
+	hass: HomeAssistant,
+	entry: SunsetBoulevardConfigEntry,
+	async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+	"""Show the restaurants, unless another entry already does."""
+	feed = hass.data.setdefault(DATA_FEED, RestaurantFeed())
+
+	@callback
+	def _start() -> None:
+		_async_show_restaurants(hass, entry, async_add_entities)
+
+	@callback
+	def _leave() -> None:
+		feed.async_leave(hass, entry.entry_id)
+
+	entry.async_on_unload(_leave)
+	feed.async_join(entry.entry_id, _start)
+
+
+@callback
+def _async_show_restaurants(
 	hass: HomeAssistant,
 	entry: SunsetBoulevardConfigEntry,
 	async_add_entities: AddConfigEntryEntitiesCallback,
@@ -46,9 +108,10 @@ async def async_setup_entry(
 	# Remove only those for restaurants that closed while Home Assistant was off.
 	registry = er.async_get(hass)
 	current = _current()
-	for registry_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+	for registry_entry in list(registry.entities.values()):
 		if (
-			registry_entry.domain == Platform.GEO_LOCATION
+			registry_entry.platform == DOMAIN
+			and registry_entry.domain == Platform.GEO_LOCATION
 			and registry_entry.unique_id not in current
 		):
 			registry.async_remove(registry_entry.entity_id)

@@ -18,11 +18,6 @@ FETCH_HEADERS: Final = {
 
 CONF_DEVICE_TRACKER: Final = "device_tracker"
 
-# Entries either follow a tracker (the original kind, which has no entry type)
-# or put every restaurant on the map. Only one entry of the second kind exists.
-CONF_ENTRY_TYPE: Final = "entry_type"
-ENTRY_TYPE_ALL_RESTAURANTS: Final = "all_restaurants"
-
 UPDATE_INTERVAL: Final = timedelta(hours=24)
 
 # Radius in meters of the dynamic "closest restaurant" zone: the tracker
