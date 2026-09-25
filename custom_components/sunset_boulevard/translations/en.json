@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sunset Boulevard",
+        "description": "Pick the device tracker or person whose position is used to find the closest Sunset Boulevard restaurant.",
+        "data": {
+          "device_tracker": "Device tracker or person"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This tracker is already configured."
+    }
+  },
+  "entity": {
+    "device_tracker": {
+      "closest_location": {
+        "name": "Closest restaurant location"
+      }
+    },
+    "sensor": {
+      "closest_location": {
+        "name": "Closest restaurant"
+      },
+      "distance": {
+        "name": "Distance to closest restaurant"
+      }
+    }
+  }
+}
