@@ -3,20 +3,60 @@
     "step": {
       "user": {
         "title": "Sunset Boulevard",
+        "description": "What do you want to set up?",
+        "menu_options": {
+          "follow": "Follow a person",
+          "all_restaurants": "All restaurants on the map"
+        },
+        "menu_option_descriptions": {
+          "follow": "Find the restaurant closest to one person, with its address and distance.",
+          "all_restaurants": "Put every Sunset Boulevard restaurant on the map."
+        }
+      },
+      "follow": {
+        "title": "Follow a person",
         "description": "Pick the device tracker or person whose position is used to find the closest Sunset Boulevard restaurant.",
         "data": {
           "device_tracker": "Device tracker or person"
+        },
+        "data_description": {
+          "device_tracker": "The restaurant closest to them is shown."
         }
       }
     },
     "abort": {
-      "already_configured": "This tracker is already configured."
+      "already_configured": "This tracker is already configured.",
+      "all_restaurants_configured": "All restaurants are already on the map."
     }
   },
   "entity": {
     "device_tracker": {
       "closest_location": {
         "name": "Closest restaurant location"
+      }
+    },
+    "geo_location": {
+      "restaurant": {
+        "state_attributes": {
+          "address": {
+            "name": "Address"
+          },
+          "venue": {
+            "name": "Located in"
+          },
+          "street": {
+            "name": "Street"
+          },
+          "postal": {
+            "name": "Postal code"
+          },
+          "city": {
+            "name": "City"
+          },
+          "link": {
+            "name": "Restaurant page"
+          }
+        }
       }
     },
     "sensor": {

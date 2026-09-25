@@ -12,21 +12,19 @@ from __future__ import annotations
 from homeassistant.components.device_tracker import SourceType, TrackerEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import SunsetBoulevardCoordinator, SunsetBoulevardData
-from .const import DOMAIN
+from . import SunsetBoulevardConfigEntry, SunsetBoulevardCoordinator
 from .entity import ClosestLocationEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: SunsetBoulevardConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Sunset Boulevard device tracker."""
-    data: SunsetBoulevardData = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([ClosestLocationTracker(data.coordinator, entry)])
+    async_add_entities([ClosestLocationTracker(entry.runtime_data.coordinator, entry)])
 
 
 class ClosestLocationTracker(ClosestLocationEntity, TrackerEntity):

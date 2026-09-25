@@ -12,21 +12,19 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfLength
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import SunsetBoulevardCoordinator, SunsetBoulevardData
-from .const import DOMAIN
+from . import SunsetBoulevardConfigEntry, SunsetBoulevardCoordinator
 from .entity import ClosestLocationEntity
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: SunsetBoulevardConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Sunset Boulevard sensors."""
-    data: SunsetBoulevardData = hass.data[DOMAIN][entry.entry_id]
-    coordinator = data.coordinator
+    coordinator = entry.runtime_data.coordinator
     async_add_entities(
         [
             ClosestLocationSensor(coordinator, entry),

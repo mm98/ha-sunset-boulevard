@@ -17,7 +17,14 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, FETCH_HEADERS, LOCATIONS_URL, UPDATE_INTERVAL
+from .const import (
+    CONF_ENTRY_TYPE,
+    DOMAIN,
+    ENTRY_TYPE_ALL_RESTAURANTS,
+    FETCH_HEADERS,
+    LOCATIONS_URL,
+    UPDATE_INTERVAL,
+)
 from .locations import SunsetBoulevardLocation, load_postal_map, parse_locations
 
 if TYPE_CHECKING:
@@ -25,7 +32,11 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+# Platforms for an entry that follows a tracker, and for the all restaurants one.
 PLATFORMS = [Platform.DEVICE_TRACKER, Platform.SENSOR]
+ALL_RESTAURANTS_PLATFORMS = [Platform.GEO_LOCATION]
+
+type SunsetBoulevardConfigEntry = ConfigEntry[SunsetBoulevardData]
 
 # Persisted last-known-good copy of the list, shared by all entries (the list
 # is identical for every tracker), so a broken page or a cold restart still
@@ -39,7 +50,13 @@ class SunsetBoulevardData:
     """Runtime data stored per config entry."""
 
     coordinator: SunsetBoulevardCoordinator
-    zone: ClosestLocationZone
+    # Only entries that follow a tracker have a zone.
+    zone: ClosestLocationZone | None
+
+
+def is_all_restaurants(entry: ConfigEntry) -> bool:
+    """Whether the entry shows every restaurant instead of following a tracker."""
+    return entry.data.get(CONF_ENTRY_TYPE) == ENTRY_TYPE_ALL_RESTAURANTS
 
 
 class SunsetBoulevardCoordinator(
@@ -144,29 +161,39 @@ class SunsetBoulevardCoordinator(
         return when, locations
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(
+    hass: HomeAssistant, entry: SunsetBoulevardConfigEntry
+) -> bool:
     """Set up Sunset Boulevard from a config entry."""
     coordinator = SunsetBoulevardCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
+
+    if is_all_restaurants(entry):
+        entry.runtime_data = SunsetBoulevardData(coordinator=coordinator, zone=None)
+        await hass.config_entries.async_forward_entry_setups(
+            entry, ALL_RESTAURANTS_PLATFORMS
+        )
+        return True
 
     # Local import avoids a circular import (zone.py needs the coordinator type).
     from .zone import ClosestLocationZone
 
     zone = ClosestLocationZone(hass, entry, coordinator)
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = SunsetBoulevardData(
-        coordinator=coordinator, zone=zone
-    )
+    entry.runtime_data = SunsetBoulevardData(coordinator=coordinator, zone=zone)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     zone.async_start()
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, entry: SunsetBoulevardConfigEntry
+) -> bool:
     """Unload a config entry."""
+    platforms = ALL_RESTAURANTS_PLATFORMS if is_all_restaurants(entry) else PLATFORMS
     if unload_ok := await hass.config_entries.async_unload_platforms(
-        entry, PLATFORMS
+        entry, platforms
     ):
-        data: SunsetBoulevardData = hass.data[DOMAIN].pop(entry.entry_id)
-        data.zone.async_stop()
+        if entry.runtime_data.zone is not None:
+            entry.runtime_data.zone.async_stop()
     return unload_ok
