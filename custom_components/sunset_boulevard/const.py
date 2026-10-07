@@ -16,9 +16,9 @@ FETCH_HEADERS: Final = {
     "Accept-Language": "da,en;q=0.9",
 }
 
-# The logo shipped in brand/. Home Assistant serves it here, and it is used as
-# the picture on the map markers.
-LOGO_URL: Final = f"/api/brands/integration/{DOMAIN}/icon.png"
+# The logo shipped in brand/, served without login so map markers can show it.
+# The brands API under /api/brands needs a login, which gives a 403 in a browser.
+LOGO_URL: Final = f"/{DOMAIN}/logo.png"
 
 CONF_DEVICE_TRACKER: Final = "device_tracker"
 
