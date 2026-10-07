@@ -15,7 +15,7 @@ from homeassistant.util.hass_dict import HassKey
 from homeassistant.util.location import distance
 
 from . import SunsetBoulevardConfigEntry
-from .const import DOMAIN
+from .const import DOMAIN, LOGO_URL
 from .locations import SunsetBoulevardLocation
 
 # Nothing is polled per entity, the coordinator pushes every update.
@@ -154,6 +154,7 @@ class RestaurantLocation(GeolocationEvent):
 	# Set on the entity rather than in icons.json, so the state carries an icon
 	# attribute that a map card can show with label_mode: icon.
 	_attr_icon = "mdi:french-fries"
+	_attr_entity_picture = LOGO_URL
 
 	def __init__(
 		self, hass: HomeAssistant, key: str, location: SunsetBoulevardLocation

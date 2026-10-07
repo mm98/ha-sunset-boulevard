@@ -16,6 +16,10 @@ FETCH_HEADERS: Final = {
     "Accept-Language": "da,en;q=0.9",
 }
 
+# The logo shipped in brand/, served without login so map markers can show it.
+# The brands API under /api/brands needs a login, which gives a 403 in a browser.
+LOGO_URL: Final = f"/{DOMAIN}/logo.png"
+
 CONF_DEVICE_TRACKER: Final = "device_tracker"
 
 UPDATE_INTERVAL: Final = timedelta(hours=24)
