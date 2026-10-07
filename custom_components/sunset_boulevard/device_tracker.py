@@ -15,6 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SunsetBoulevardConfigEntry, SunsetBoulevardCoordinator
+from .const import LOGO_URL
 from .entity import ClosestLocationEntity
 
 
@@ -32,6 +33,7 @@ class ClosestLocationTracker(ClosestLocationEntity, TrackerEntity):
 
     _attr_translation_key = "closest_location"
     _attr_icon = "mdi:french-fries"
+    _attr_entity_picture = LOGO_URL
 
     def __init__(
         self, coordinator: SunsetBoulevardCoordinator, entry: ConfigEntry

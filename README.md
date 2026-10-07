@@ -44,6 +44,8 @@ Then pick the person or device tracker to follow. To follow more people, add the
 | Distance to closest restaurant | How far away the nearest restaurant is, in km. |
 | Closest restaurant location | A marker on the map at the nearest restaurant. |
 
+The markers use the Sunset Boulevard logo as their picture, on maps that show pictures.
+
 There is also a small zone around the nearest restaurant, which moves when another restaurant becomes the nearest. Use it in automations to react when someone arrives. It is named after the person you follow: for `person.anna` it is `zone.sunset_boulevard_closest_anna`.
 
 The zone is not listed under **Settings > Areas, labels & zones**, and a person's location does not change to it. Use it in an automation instead, like the example below.
@@ -52,7 +54,7 @@ The zone is not listed under **Settings > Areas, labels & zones**, and a person'
 
 Every restaurant also shows on the Home Assistant map with its own marker, named after the restaurant, for example `Kolding Storcenter`. There is nothing to set up for this, and when you follow more than one person, each restaurant still shows only once. Its value is the distance from your home in km. Open it to see the address and a link to the restaurant's page.
 
-The **Map** in the sidebar shows them by itself. To put them on a dashboard, add a **Map** card, open its code editor and paste this. It shows the fries icon for each restaurant:
+The **Map** in the sidebar shows them by itself. To put them on a dashboard, add a **Map** card, open its code editor and paste this. It shows the fries icon for each restaurant (remove `label_mode: icon` to show the Sunset Boulevard logo instead):
 
 ```yaml
 type: map

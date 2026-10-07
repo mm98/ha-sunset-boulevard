@@ -16,6 +16,10 @@ FETCH_HEADERS: Final = {
     "Accept-Language": "da,en;q=0.9",
 }
 
+# The logo shipped in brand/. Home Assistant serves it here, and it is used as
+# the picture on the map markers.
+LOGO_URL: Final = f"/api/brands/integration/{DOMAIN}/icon.png"
+
 CONF_DEVICE_TRACKER: Final = "device_tracker"
 
 UPDATE_INTERVAL: Final = timedelta(hours=24)
