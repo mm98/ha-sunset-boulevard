@@ -54,13 +54,12 @@ The zone is not listed under **Settings > Areas, labels & zones**, and a person'
 
 Every restaurant also shows on the Home Assistant map with its own marker, named after the restaurant, for example `Kolding Storcenter`. There is nothing to set up for this, and when you follow more than one person, each restaurant still shows only once. Its value is the distance from your home in km. Open it to see the address and a link to the restaurant's page.
 
-The **Map** in the sidebar shows them by itself. To put them on a dashboard, add a **Map** card, open its code editor and paste this. It shows the fries icon for each restaurant (remove `label_mode: icon` to show the Sunset Boulevard logo instead):
+The **Map** in the sidebar shows them by itself. To put them on a dashboard, add a **Map** card, open its code editor and paste this. It shows the Sunset Boulevard logo for each restaurant. If you want the fries icon instead, add `label_mode: icon` on the line below `source`.
 
 ```yaml
 type: map
 geo_location_sources:
   - source: sunset_boulevard
-    label_mode: icon
 ```
 
 When a restaurant opens or closes, the map changes with it. If you rename or hide a restaurant, that stays when Home Assistant restarts.
