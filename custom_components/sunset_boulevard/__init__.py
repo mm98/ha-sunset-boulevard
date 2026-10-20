@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pathlib import Path
 
@@ -26,9 +26,6 @@ from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN, FETCH_HEADERS, LOCATIONS_URL, LOGO_URL, UPDATE_INTERVAL
 from .locations import SunsetBoulevardLocation, load_postal_map, parse_locations
-
-if TYPE_CHECKING:
-    from .zone import ClosestLocationZone
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +66,6 @@ class SunsetBoulevardData:
     """Runtime data stored per config entry."""
 
     coordinator: SunsetBoulevardCoordinator
-    zone: ClosestLocationZone
 
 
 class SunsetBoulevardCoordinator(
@@ -188,14 +184,9 @@ async def async_setup_entry(
     coordinator = SunsetBoulevardCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
 
-    # Local import avoids a circular import (zone.py needs the coordinator type).
-    from .zone import ClosestLocationZone
-
-    zone = ClosestLocationZone(hass, entry, coordinator)
-    entry.runtime_data = SunsetBoulevardData(coordinator=coordinator, zone=zone)
+    entry.runtime_data = SunsetBoulevardData(coordinator=coordinator)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    zone.async_start()
     return True
 
 
@@ -203,8 +194,4 @@ async def async_unload_entry(
     hass: HomeAssistant, entry: SunsetBoulevardConfigEntry
 ) -> bool:
     """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(
-        entry, PLATFORMS
-    ):
-        entry.runtime_data.zone.async_stop()
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

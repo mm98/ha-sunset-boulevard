@@ -1,10 +1,9 @@
 """Device tracker platform for the Sunset Boulevard integration.
 
 Publishes an entity positioned at the restaurant closest to the configured
-tracker. Unlike the dynamic zone, this is a proper entity on the integration's
-device: it shows on the map natively and its state resolves against your zones
-(so it reads ``home`` if a restaurant ever falls inside your home zone,
-otherwise ``not_home``).
+tracker, on the integration's device. It shows on the map natively and its
+state resolves against your zones (so it reads ``home`` if a restaurant ever
+falls inside your home zone, otherwise ``not_home``).
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
 """Shared location helpers for the Sunset Boulevard integration.
 
-Used by both the sensor platform and the dynamic zone so they resolve the
+Used by the sensor and device tracker platforms so they resolve the
 tracker position and the nearest restaurant identically.
 """
 

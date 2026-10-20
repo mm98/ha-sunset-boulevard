@@ -46,9 +46,7 @@ Then pick the person or device tracker to follow. To follow more people, add the
 
 The markers use the Sunset Boulevard logo as their picture, on maps that show pictures.
 
-There is also a small zone around the nearest restaurant, which moves when another restaurant becomes the nearest. Use it in automations to react when someone arrives. It is named after the person you follow: for `person.anna` it is `zone.sunset_boulevard_closest_anna`.
-
-The zone is not listed under **Settings > Areas, labels & zones**, and a person's location does not change to it. Use it in an automation instead, like the example below.
+To react when someone arrives at a restaurant, use the distance sensor in an automation, like the example below.
 
 ### All restaurants on the map
 
@@ -67,14 +65,13 @@ When a restaurant opens or closes, the map changes with it. If you rename or hid
 
 ## Example: a notification when you arrive
 
-Create a new automation, open the three dots at the top right, pick **Edit in YAML** and paste this. Change `anna` to the person you follow.
+This runs when the person you follow comes within 100 m of the nearest restaurant. The sensor counts in km, so `0.1` is 100 m. Create a new automation, open the three dots at the top right, pick **Edit in YAML** and paste this. Then change the `entity_id` to your own **Distance to closest restaurant** sensor. You find it on the integration's device under **Settings > Devices & services > Sunset Boulevard**.
 
 ```yaml
 triggers:
-  - trigger: zone
-    entity_id: person.anna
-    zone: zone.sunset_boulevard_closest_anna
-    event: enter
+  - trigger: numeric_state
+    entity_id: sensor.sunset_boulevard_distance_to_closest_restaurant
+    below: 0.1
 actions:
   - action: notify.notify
     data:

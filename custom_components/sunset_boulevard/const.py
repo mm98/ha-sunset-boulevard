@@ -23,7 +23,3 @@ LOGO_URL: Final = f"/{DOMAIN}/logo.png"
 CONF_DEVICE_TRACKER: Final = "device_tracker"
 
 UPDATE_INTERVAL: Final = timedelta(hours=24)
-
-# Radius in meters of the dynamic "closest restaurant" zone: the tracker
-# counts as inside it once within this distance of the nearest restaurant.
-ZONE_RADIUS: Final = 100
