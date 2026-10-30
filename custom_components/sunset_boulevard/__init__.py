@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Any
 
 from pathlib import Path
@@ -24,8 +25,21 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from homeassistant.util.hass_dict import HassKey
 
-from .const import DOMAIN, FETCH_HEADERS, LOCATIONS_URL, LOGO_URL, UPDATE_INTERVAL
-from .locations import SunsetBoulevardLocation, load_postal_map, parse_locations
+from .const import (
+    DOMAIN,
+    FETCH_HEADERS,
+    LOCATIONS_URL,
+    LOGO_URL,
+    RESTAURANTS_FALLBACK_URL,
+    UPDATE_INTERVAL,
+)
+from .locations import (
+    SunsetBoulevardLocation,
+    load_bundled_locations,
+    load_postal_map,
+    parse_locations,
+    parse_restaurant_list,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -115,7 +129,9 @@ class SunsetBoulevardCoordinator(
                 _LOGGER.debug("Loaded %d locations from the page", len(locations))
                 return locations
 
-        # Live source failed — fall back to the last saved copy if we have one.
+        # Live source failed: fall back to the last saved copy if we have one,
+        # after replacing it with the list on GitHub if that one is newer.
+        await self._async_update_from_github()
         cached = await self._async_load_cached()
         if cached is not None:
             saved, locations = cached
@@ -127,10 +143,21 @@ class SunsetBoulevardCoordinator(
             )
             return locations
 
-        raise UpdateFailed(
-            f"Could not load the restaurant list and no saved copy is"
-            f" available: {reason}"
+        # No saved copy either, e.g. a new install — use the bundled list.
+        try:
+            locations = await self.hass.async_add_executor_job(load_bundled_locations)
+        except (OSError, ValueError, TypeError) as err:
+            raise UpdateFailed(
+                f"Could not load the restaurant list, no saved copy is available"
+                f" and the bundled list could not be read ({err}): {reason}"
+            ) from err
+
+        _LOGGER.warning(
+            "Using the restaurant list bundled with the integration; the live"
+            " source failed: %s",
+            reason,
         )
+        return locations
 
     async def _fetch(self, url: str) -> str:
         session = async_get_clientsession(self.hass)
@@ -139,10 +166,29 @@ class SunsetBoulevardCoordinator(
             response.raise_for_status()
             return await response.text()
 
-    async def _async_save(self, locations: list[SunsetBoulevardLocation]) -> None:
+    async def _async_update_from_github(self) -> None:
+        """Save the list from GitHub if it is newer than the saved copy."""
+        try:
+            updated, locations = parse_restaurant_list(
+                await self._fetch(RESTAURANTS_FALLBACK_URL)
+            )
+        except (TimeoutError, ClientError, ValueError, TypeError, KeyError) as err:
+            _LOGGER.debug("Could not read the restaurant list on GitHub: %s", err)
+            return
+
+        data = await self._store.async_load()
+        saved = dt_util.parse_datetime((data or {}).get("saved") or "")
+        if saved is None or updated > saved:
+            await self._async_save(locations, updated)
+
+    async def _async_save(
+        self,
+        locations: list[SunsetBoulevardLocation],
+        saved: datetime | None = None,
+    ) -> None:
         await self._store.async_save(
             {
-                "saved": dt_util.utcnow().isoformat(),
+                "saved": (saved or dt_util.utcnow()).isoformat(),
                 "locations": [asdict(location) for location in locations],
             }
         )
