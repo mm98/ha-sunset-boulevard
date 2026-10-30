@@ -12,12 +12,14 @@ import json
 import logging
 import re
 from dataclasses import dataclass, replace
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 
 _LOGGER = logging.getLogger(__name__)
 
 _POSTAL_CODES_FILE = "postal_codes.json"
+_RESTAURANTS_FILE = "restaurants.json"
 
 _POSTAL_RE = re.compile(r"\d{4}")
 
@@ -219,6 +221,28 @@ def load_postal_map(path: str | None = None) -> dict[str, str]:
     file = Path(path) if path else Path(__file__).with_name(_POSTAL_CODES_FILE)
     with file.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def parse_restaurant_list(text: str) -> tuple[datetime, list[SunsetBoulevardLocation]]:
+    """Parse a restaurants.json file into its date and its restaurants.
+
+    Raises ValueError, TypeError or KeyError if the content is not valid, and
+    ValueError if it lists no restaurants.
+    """
+    data = json.loads(text)
+    updated = datetime.fromisoformat(data["updated"])
+    if updated.tzinfo is None:
+        raise ValueError("the updated date has no time zone")
+    locations = [SunsetBoulevardLocation(**item) for item in data["restaurants"]]
+    if not locations:
+        raise ValueError("the list is empty")
+    return updated, locations
+
+
+def load_bundled_locations(path: str | None = None) -> list[SunsetBoulevardLocation]:
+    """Load the restaurant list shipped with the integration."""
+    file = Path(path) if path else Path(__file__).with_name(_RESTAURANTS_FILE)
+    return parse_restaurant_list(file.read_text(encoding="utf-8"))[1]
 
 
 def _fill_postal(

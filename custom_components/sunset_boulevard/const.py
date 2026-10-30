@@ -5,6 +5,11 @@ from typing import Final
 
 DOMAIN: Final = "sunset_boulevard"
 LOCATIONS_URL: Final = "https://sunset-boulevard.dk/restauranter/"
+# Maintained copy of the list, used when the website can't be read.
+RESTAURANTS_FALLBACK_URL: Final = (
+    "https://raw.githubusercontent.com/mm98/ha-sunset-boulevard/main/"
+    "custom_components/sunset_boulevard/restaurants.json"
+)
 
 # The site's firewall rejects requests (HTTP 455/454) unless they carry both
 # a realistic browser User-Agent and an Accept-Language header.
