@@ -1,0 +1,42 @@
+# Updates restaurants.json from a saved copy of the restaurant page.
+#
+# 1. Open https://sunset-boulevard.dk/restauranter/ in your browser and save it
+#    as a .html file.
+# 2. In this repository, choose Add file > Upload files and upload that file.
+# 3. Choose "Create a new branch" and open the pull request.
+# 4. This workflow replaces the upload with the updated restaurants.json.
+#    Check the changes in the pull request, then merge it.
+name: Import restaurants
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "*.html"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Update restaurants.json
+        run: |
+          shopt -s nullglob
+          pages=(*.html)
+          if [ "${#pages[@]}" -ne 1 ]; then
+            echo "Upload exactly one .html file, found ${#pages[@]}."
+            exit 1
+          fi
+          python3 .github/scripts/import_restaurants.py "${pages[0]}"
+          git rm -q -- "${pages[0]}"
+      - name: Commit the result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add custom_components/sunset_boulevard/restaurants.json
+          git commit -m "Update the restaurant list from the saved page"
+          git push
