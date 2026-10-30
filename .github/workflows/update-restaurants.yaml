@@ -1,0 +1,46 @@
+# Once a day, reads the restaurant page and saves any changes to restaurants.json.
+# While the website blocks the request, the run only logs that and changes nothing.
+name: Update restaurants
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Update restaurants.json
+        run: |
+          page="$RUNNER_TEMP/restaurants.html"
+          status=$(curl -sS -m 30 -o "$page" -w "%{http_code}" \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" \
+            -H "Accept-Language: da,en;q=0.9" \
+            https://sunset-boulevard.dk/restauranter/) || status="no answer"
+          if [ "$status" != "200" ]; then
+            echo "::notice::The website did not give the page (HTTP $status). List not changed."
+            exit 0
+          fi
+          code=0
+          python3 .github/scripts/import_restaurants.py "$page" || code=$?
+          if [ "$code" -eq 2 ]; then
+            echo "::notice::The page had no restaurants. List not changed."
+          elif [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
+      - name: Commit any changes
+        run: |
+          git add custom_components/sunset_boulevard/restaurants.json
+          if git diff --cached --quiet; then
+            echo "No changes to save."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update the restaurant list from the website"
+          git push
