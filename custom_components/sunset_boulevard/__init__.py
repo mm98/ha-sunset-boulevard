@@ -135,7 +135,9 @@ class SunsetBoulevardCoordinator(
         cached = await self._async_load_cached()
         if cached is not None:
             saved, locations = cached
-            _LOGGER.warning(
+            # Debug only: the saved list (kept fresh from GitHub) is a normal
+            # fallback, not something the user needs to act on.
+            _LOGGER.debug(
                 "Using the cached restaurant list saved %s; the live source"
                 " failed: %s",
                 saved,
